@@ -109,17 +109,19 @@ void loop() {
       delay(500);
       myservo.write(90);              
       delay(1000);
-      if(rightDistance > leftDistance) {
+
+      // burps-cf: don't let the car get boxed-in
+      if((rightDistance <= 20) || (leftDistance <= 20)) {
+        back();
+        delay(180);
+      }
+      else if(rightDistance > leftDistance) {
         right();
         delay(360);
       }
       else if(rightDistance < leftDistance) {
         left();
         delay(360);
-      }
-      else if((rightDistance <= 20) || (leftDistance <= 20)) {
-        back();
-        delay(180);
       }
       else {
         forward();
