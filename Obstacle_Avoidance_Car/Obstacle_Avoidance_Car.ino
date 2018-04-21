@@ -107,15 +107,17 @@ void loop() {
       leftDistance = Distance_test();
       
       delay(500);
-      myservo.write(90);              
+      myservo.write(90);
       delay(1000);
 
       // burps-cf: don't let the car get boxed-in
+      // TODO: would AND work better than OR?
       if((rightDistance <= 20) || (leftDistance <= 20)) {
         back();
         delay(180);
       }
-      else if(rightDistance > leftDistance) {
+      // burps-cf: prioritise right-hand turns
+      else if(rightDistance >= leftDistance) {
         right();
         delay(360);
       }
@@ -123,6 +125,7 @@ void loop() {
         left();
         delay(360);
       }
+      // burps-cf: should not ever to execute this branch?
       else {
         forward();
       }
