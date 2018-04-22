@@ -1,5 +1,8 @@
 //www.elegoo.com
 
+// burps-cf: for scaling speed
+#include <math.h>
+
 #include <Servo.h>  //servo library
 Servo myservo;      // create servo object to control servo
 
@@ -15,9 +18,13 @@ int Trig = A5;
 #define carSpeed 150
 int rightDistance = 0, leftDistance = 0, middleDistance = 0;
 
+// burps-cf: adjustable forward speed
+#define speedScaling 20
+int forwardSpeed = carSpeed;
+
 void forward(){ 
-  analogWrite(ENA, carSpeed);
-  analogWrite(ENB, carSpeed);
+  analogWrite(ENA, forwardSpeed);
+  analogWrite(ENB, forwardSpeed);
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
@@ -71,7 +78,33 @@ int Distance_test() {
   float Fdistance = pulseIn(Echo, HIGH);  
   Fdistance= Fdistance / 58;       
   return (int)Fdistance;
-}  
+}
+
+// burps-cf:
+// compute adjusted speed according to the distance
+// to the obstacle in front of the car
+int adjustSpeed(int distance) {
+
+  int newSpeed;
+
+  // slow down when approach an obstacle in front
+  if (distance <= 50) {
+    // newSpeed = int(exp((float)distance/10.0));
+    newSpeed = carSpeed - (speedScaling * carSpeed / distance);
+  } else {
+    newSpeed = carSpeed;
+  }
+
+  // sane boundaries
+  newSpeed = (newSpeed > carSpeed) ? carSpeed : newSpeed;
+  newSpeed = (newSpeed < 1) ? 1 : newSpeed;
+
+  Serial.print ("New speed: ");
+  Serial.println (newSpeed);
+
+  return newSpeed;
+
+} // adjustSpeed
 
 void setup() { 
   myservo.attach(3);  // attach servo on pin 3 to servo object
@@ -92,6 +125,9 @@ void loop() {
     delay(500); 
     middleDistance = Distance_test();
 
+    // burps-cf: slow down if obstacle ahead
+    forwardSpeed = adjustSpeed(middleDistance);
+
     if(middleDistance <= 20) {     
       stop();
       delay(500);                         
@@ -111,10 +147,15 @@ void loop() {
       delay(1000);
 
       // burps-cf: don't let the car get boxed-in
-      // TODO: would AND work better than OR?
-      if((rightDistance <= 20) || (leftDistance <= 20)) {
+      //
+      // this does not work, because after the car backs off
+      // it tests middleDistance and then just drives
+      // forward again until approaching the same obstacle.
+      //
+      // to fix it we need it to remember to test right and front only
+      if((rightDistance <= 20) && (leftDistance <= 20)) {
         back();
-        delay(180);
+        delay(300);
       }
       // burps-cf: prioritise right-hand turns
       else if(rightDistance >= leftDistance) {
