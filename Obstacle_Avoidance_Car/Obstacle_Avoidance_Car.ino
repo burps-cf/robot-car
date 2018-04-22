@@ -19,7 +19,7 @@ int Trig = A5;
 int rightDistance = 0, leftDistance = 0, middleDistance = 0;
 
 // burps-cf: adjustable forward speed
-#define speedScaling 20
+#define speedScaling 18
 int forwardSpeed = carSpeed;
 
 void forward(){ 
@@ -97,7 +97,7 @@ int adjustSpeed(int distance) {
 
   // sane boundaries
   newSpeed = (newSpeed > carSpeed) ? carSpeed : newSpeed;
-  newSpeed = (newSpeed < 1) ? 1 : newSpeed;
+  newSpeed = (newSpeed < 0) ? 0 : newSpeed;
 
   Serial.print ("New speed: ");
   Serial.println (newSpeed);
