@@ -69,13 +69,18 @@ void stop() {
 } 
 
 //Ultrasonic distance measurement Sub function
+// in cm
+// do not call more often thant every 60ms!
+// (to prevent trigger confused with echo signal)
 int Distance_test() {
   digitalWrite(Trig, LOW);   
   delayMicroseconds(2);
   digitalWrite(Trig, HIGH);  
   delayMicroseconds(20);
-  digitalWrite(Trig, LOW);   
-  float Fdistance = pulseIn(Echo, HIGH);  
+  digitalWrite(Trig, LOW);
+  // pulseIn returns echo in us
+  float Fdistance = pulseIn(Echo, HIGH);
+  // convert echo delay into cms
   Fdistance= Fdistance / 58;       
   return (int)Fdistance;
 }
