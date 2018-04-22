@@ -19,6 +19,7 @@ int Trig = A5;
 int rightDistance = 0, leftDistance = 0, middleDistance = 0;
 
 // burps-cf: adjustable forward speed
+#define speedScaling 20
 int forwardSpeed = carSpeed;
 
 void forward(){ 
@@ -88,7 +89,8 @@ int adjustSpeed(int distance) {
 
   // slow down when approach an obstacle in front
   if (distance <= 50) {
-    newSpeed = int(exp((float)distance/10.0));
+    // newSpeed = int(exp((float)distance/10.0));
+    newSpeed = carSpeed - (speedScaling * carSpeed / distance);
   } else {
     newSpeed = carSpeed;
   }
@@ -145,10 +147,15 @@ void loop() {
       delay(1000);
 
       // burps-cf: don't let the car get boxed-in
-      // TODO: would AND work better than OR?
-      if((rightDistance <= 20) || (leftDistance <= 20)) {
+      //
+      // this does not work, because after the car backs off
+      // it tests middleDistance and then just drives
+      // forward again until approaching the same obstacle.
+      //
+      // to fix it we need it to remember to test right and front only
+      if((rightDistance <= 20) && (leftDistance <= 20)) {
         back();
-        delay(180);
+        delay(300);
       }
       // burps-cf: prioritise right-hand turns
       else if(rightDistance >= leftDistance) {
